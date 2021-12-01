@@ -106,8 +106,10 @@
         <span class="chatlog__timestamp">@FormatDate(Model.MessageGroup.Timestamp)</span>
 
         @{/* Messages in a group */}
-        @foreach (var message in Model.MessageGroup.Messages)
+        @foreach (var usersReactionsMessage in Model.MessageGroup.Messages)
         {
+            var message = usersReactionsMessage.Message;
+
             <div class="chatlog__message @(message.IsPinned ? "chatlog__message--pinned" : null)" data-message-id="@message.Id" id="message-@message.Id" title="Message sent: @FormatDate(message.Timestamp)">
                 @if (!string.IsNullOrWhiteSpace(message.Content) || message.EditedTimestamp is not null)
                 {
@@ -415,11 +417,12 @@
                 @if (message.Reactions.Any())
                 {
                     <div class="chatlog__reactions">
-                        @foreach (var reaction in message.Reactions)
+                        @foreach (var reaction in usersReactionsMessage.Reactions)
                         {
-                            <div class="chatlog__reaction" title="@reaction.Emoji.Code">
+                            var title = string.Join(", ", reaction.Users.Select(x => x.Name)) + " zareagoval(i) s " + reaction.Emoji.Code;
+                            <div class="chatlog__reaction" title="@title">
                                 <img class="emoji emoji--small" alt="@reaction.Emoji.Name" src="@await ResolveUrlAsync(reaction.Emoji.ImageUrl)" loading="lazy">
-                                <span class="chatlog__reaction-count">@reaction.Count</span>
+                                <span class="chatlog__reaction-count">@(message.Reactions.First(x => x.Emoji.Id == reaction.Emoji.Id).Count)</span>
                             </div>
                         }
                     </div>

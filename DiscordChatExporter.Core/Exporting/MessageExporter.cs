@@ -55,10 +55,10 @@ namespace DiscordChatExporter.Core.Exporting
             return _writer = writer;
         }
 
-        public async ValueTask ExportMessageAsync(Message message, CancellationToken cancellationToken = default)
+        public async ValueTask ExportUsersReactionsMessageAsync(UsersReactionsMessage message, CancellationToken cancellationToken = default)
         {
             var writer = await GetWriterAsync(cancellationToken);
-            await writer.WriteMessageAsync(message, cancellationToken);
+            await writer.WriteUsersReactionsMessageAsync(message, cancellationToken);
         }
 
         public async ValueTask DisposeAsync() => await ResetWriterAsync();

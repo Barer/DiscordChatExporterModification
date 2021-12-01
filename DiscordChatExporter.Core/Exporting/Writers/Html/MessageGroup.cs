@@ -12,7 +12,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers.Html
 
         public DateTimeOffset Timestamp { get; }
 
-        public IReadOnlyList<Message> Messages { get; }
+        public IReadOnlyList<UsersReactionsMessage> Messages { get; }
 
         public MessageReference? Reference { get; }
 
@@ -23,7 +23,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers.Html
             DateTimeOffset timestamp,
             MessageReference? reference,
             Message? referencedMessage,
-            IReadOnlyList<Message> messages)
+            IReadOnlyList<UsersReactionsMessage> messages)
         {
             Author = author;
             Timestamp = timestamp;
@@ -35,19 +35,19 @@ namespace DiscordChatExporter.Core.Exporting.Writers.Html
 
     internal partial class MessageGroup
     {
-        public static bool CanJoin(Message message1, Message message2) =>
+        public static bool CanJoin(UsersReactionsMessage message1, UsersReactionsMessage message2) =>
             // Must be from the same author
-            message1.Author.Id == message2.Author.Id &&
+            message1.Message.Author.Id == message2.Message.Author.Id &&
             // Author's name must not have changed between messages
-            string.Equals(message1.Author.FullName, message2.Author.FullName, StringComparison.Ordinal) &&
+            string.Equals(message1.Message.Author.FullName, message2.Message.Author.FullName, StringComparison.Ordinal) &&
             // Duration between messages must be 7 minutes or less
-            (message2.Timestamp - message1.Timestamp).Duration().TotalMinutes <= 7 &&
+            (message2.Message.Timestamp - message1.Message.Timestamp).Duration().TotalMinutes <= 7 &&
             // Other message must not be a reply
-            message2.Reference is null;
+            message2.Message.Reference is null;
 
-        public static MessageGroup Join(IReadOnlyList<Message> messages)
+        public static MessageGroup Join(IReadOnlyList<UsersReactionsMessage> messages)
         {
-            var first = messages.First();
+            var first = messages.First().Message;
 
             return new MessageGroup(
                 first.Author,

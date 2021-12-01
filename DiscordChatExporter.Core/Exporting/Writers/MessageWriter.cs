@@ -24,7 +24,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
 
         public virtual ValueTask WritePreambleAsync(CancellationToken cancellationToken = default) => default;
 
-        public virtual ValueTask WriteMessageAsync(Message message, CancellationToken cancellationToken = default)
+        public virtual ValueTask WriteUsersReactionsMessageAsync(UsersReactionsMessage message, CancellationToken cancellationToken = default)
         {
             MessagesWritten++;
             return default;

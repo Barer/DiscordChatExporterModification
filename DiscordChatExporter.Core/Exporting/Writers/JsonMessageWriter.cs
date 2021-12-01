@@ -161,8 +161,8 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             await _writer.FlushAsync(cancellationToken);
         }
 
-        private async ValueTask WriteReactionAsync(
-            Reaction reaction,
+        private async ValueTask WriteUsersReactionAsync(
+            UsersReaction reaction,
             CancellationToken cancellationToken = default)
         {
             _writer.WriteStartObject();
@@ -175,7 +175,20 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             _writer.WriteString("imageUrl", await Context.ResolveMediaUrlAsync(reaction.Emoji.ImageUrl, cancellationToken));
             _writer.WriteEndObject();
 
-            _writer.WriteNumber("count", reaction.Count);
+            _writer.WriteStartArray("users");
+            foreach (var user in reaction.Users)
+            {
+                _writer.WriteStartObject();
+                _writer.WriteString("id", user.Id.ToString());
+                _writer.WriteString("name", user.Name);
+                _writer.WriteString("discriminator", user.DiscriminatorFormatted);
+                _writer.WriteString("nickname", Context.TryGetMember(user.Id)?.Nick ?? user.Name);
+                _writer.WriteString("color", Context.TryGetUserColor(user.Id)?.ToHex());
+                _writer.WriteBoolean("isBot", user.IsBot);
+                _writer.WriteString("avatarUrl", await Context.ResolveMediaUrlAsync(user.AvatarUrl, cancellationToken));
+                _writer.WriteEndObject();
+            }
+            _writer.WriteEndArray();
 
             _writer.WriteEndObject();
             await _writer.FlushAsync(cancellationToken);
@@ -230,11 +243,13 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             await _writer.FlushAsync(cancellationToken);
         }
 
-        public override async ValueTask WriteMessageAsync(
-            Message message,
+        public override async ValueTask WriteUsersReactionsMessageAsync(
+            UsersReactionsMessage usersReactionsMessage,
             CancellationToken cancellationToken = default)
         {
-            await base.WriteMessageAsync(message, cancellationToken);
+            await base.WriteUsersReactionsMessageAsync(usersReactionsMessage, cancellationToken);
+
+            var message = usersReactionsMessage.Message;
 
             _writer.WriteStartObject();
 
@@ -279,8 +294,8 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             // Reactions
             _writer.WriteStartArray("reactions");
 
-            foreach (var reaction in message.Reactions)
-                await WriteReactionAsync(reaction, cancellationToken);
+            foreach (var reaction in usersReactionsMessage.Reactions)
+                await WriteUsersReactionAsync(reaction, cancellationToken);
 
             _writer.WriteEndArray();
 

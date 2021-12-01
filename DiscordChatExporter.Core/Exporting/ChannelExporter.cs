@@ -17,7 +17,7 @@ namespace DiscordChatExporter.Core.Exporting
 
         public ChannelExporter(DiscordClient discord) => _discord = discord;
 
-        public ChannelExporter(AuthToken token) : this(new DiscordClient(token)) {}
+        public ChannelExporter(AuthToken token) : this(new DiscordClient(token)) { }
 
         public async ValueTask ExportChannelAsync(
             ExportRequest request,
@@ -55,6 +55,15 @@ namespace DiscordChatExporter.Core.Exporting
                 if (!request.MessageFilter.IsMatch(message))
                     continue;
 
+                // Get message reactions
+                var reactionsWithUsers = new List<UsersReaction>();
+                foreach (var reaction in message.Reactions)
+                {
+                    var users = await _discord.GetReactionsAsync(request.Channel.Id, message.Id, reaction.Emoji, cancellationToken);
+                    var reactionWithUsers = new UsersReaction(reaction.Emoji, users);
+                    reactionsWithUsers.Add(reactionWithUsers);
+                }
+
                 // Resolve members for referenced users
                 foreach (var referencedUser in message.MentionedUsers.Prepend(message.Author))
                 {
@@ -70,8 +79,10 @@ namespace DiscordChatExporter.Core.Exporting
                     contextMembers.Add(member);
                 }
 
+                var usersReactionsMessage = new UsersReactionsMessage(message, reactionsWithUsers);
+
                 // Export message
-                await messageExporter.ExportMessageAsync(message, cancellationToken);
+                await messageExporter.ExportUsersReactionsMessageAsync(usersReactionsMessage, cancellationToken);
                 exportedAnything = true;
             }
 

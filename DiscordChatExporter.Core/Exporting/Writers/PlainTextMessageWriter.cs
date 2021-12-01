@@ -99,7 +99,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
         }
 
         private async ValueTask WriteReactionsAsync(
-            IReadOnlyList<Reaction> reactions,
+            IReadOnlyList<UsersReaction> reactions,
             CancellationToken cancellationToken = default)
         {
             if (!reactions.Any())
@@ -113,8 +113,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
 
                 await _writer.WriteAsync(reaction.Emoji.Name);
 
-                if (reaction.Count > 1)
-                    await _writer.WriteAsync($" ({reaction.Count})");
+                await _writer.WriteAsync($" ({string.Join(", ", reaction.Users.Select(x => x.Name))})");
 
                 await _writer.WriteAsync(' ');
             }
@@ -141,11 +140,13 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             await _writer.WriteLineAsync();
         }
 
-        public override async ValueTask WriteMessageAsync(
-            Message message,
+        public override async ValueTask WriteUsersReactionsMessageAsync(
+            UsersReactionsMessage usersReactionsMessage,
             CancellationToken cancellationToken = default)
         {
-            await base.WriteMessageAsync(message, cancellationToken);
+            await base.WriteUsersReactionsMessageAsync(usersReactionsMessage, cancellationToken);
+
+            var message = usersReactionsMessage.Message;
 
             // Header
             await WriteMessageHeaderAsync(message);
@@ -159,7 +160,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             // Attachments, embeds, reactions
             await WriteAttachmentsAsync(message.Attachments, cancellationToken);
             await WriteEmbedsAsync(message.Embeds, cancellationToken);
-            await WriteReactionsAsync(message.Reactions, cancellationToken);
+            await WriteReactionsAsync(usersReactionsMessage.Reactions, cancellationToken);
 
             await _writer.WriteLineAsync();
         }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,13 +44,13 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             await _writer.WriteAsync(CsvEncode(buffer.ToString()));
         }
 
-        private async ValueTask WriteReactionsAsync(
-            IReadOnlyList<Reaction> reactions,
+        private async ValueTask WriteUsersReactionsAsync(
+            IReadOnlyList<UsersReaction> usersReaction,
             CancellationToken cancellationToken = default)
         {
             var buffer = new StringBuilder();
 
-            foreach (var reaction in reactions)
+            foreach (var reaction in usersReaction)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -58,18 +59,20 @@ namespace DiscordChatExporter.Core.Exporting.Writers
                     .Append(reaction.Emoji.Name)
                     .Append(' ')
                     .Append('(')
-                    .Append(reaction.Count)
+                    .Append(string.Join(", ", reaction.Users.Select(x => x.Id)))
                     .Append(')');
             }
 
             await _writer.WriteAsync(CsvEncode(buffer.ToString()));
         }
 
-        public override async ValueTask WriteMessageAsync(
-            Message message,
+        public override async ValueTask WriteUsersReactionsMessageAsync(
+            UsersReactionsMessage usersReactionsMessage,
             CancellationToken cancellationToken = default)
         {
-            await base.WriteMessageAsync(message, cancellationToken);
+            var message = usersReactionsMessage.Message;
+
+            await base.WriteUsersReactionsMessageAsync(usersReactionsMessage, cancellationToken);
 
             // Author ID
             await _writer.WriteAsync(CsvEncode(message.Author.Id.ToString()));
@@ -92,7 +95,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             await _writer.WriteAsync(',');
 
             // Reactions
-            await WriteReactionsAsync(message.Reactions, cancellationToken);
+            await WriteUsersReactionsAsync(usersReactionsMessage.Reactions, cancellationToken);
 
             // Finish row
             await _writer.WriteLineAsync();

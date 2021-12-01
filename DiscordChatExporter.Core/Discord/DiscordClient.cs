@@ -182,6 +182,32 @@ namespace DiscordChatExporter.Core.Discord
             return response?.Pipe(Member.Parse) ?? Member.CreateForUser(user);
         }
 
+        public async IAsyncEnumerable<User> GetReactionsAsync(
+            Snowflake channelId,
+            Snowflake messageId,
+            Emoji emoji,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default
+            )
+        {
+            JsonElement? response;
+
+            try
+            {
+                var emojiName = string.IsNullOrEmpty(emoji.Id) ? emoji.Name : $"{emoji.Code}:{emoji.Id}";
+                response = await GetJsonResponseAsync($"channels/{channelId}/messages/{messageId}/reactions/{emojiName}", cancellationToken);
+            }
+            catch
+            {
+                response = null;
+            }
+
+            if (response.HasValue)
+            {
+                foreach (var userJson in response.Value.EnumerateArray())
+                    yield return User.Parse(userJson);
+            }
+        }
+
         public async ValueTask<ChannelCategory> GetChannelCategoryAsync(
             Snowflake channelId,
             CancellationToken cancellationToken = default)

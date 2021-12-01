@@ -13,7 +13,7 @@ namespace DiscordChatExporter.Core.Exporting.Writers
         private readonly TextWriter _writer;
         private readonly string _themeName;
 
-        private readonly List<Message> _messageGroupBuffer = new();
+        private readonly List<UsersReactionsMessage> _messageGroupBuffer = new();
 
         public HtmlMessageWriter(Stream stream, ExportContext context, string themeName)
             : base(stream, context)
@@ -46,11 +46,11 @@ namespace DiscordChatExporter.Core.Exporting.Writers
             );
         }
 
-        public override async ValueTask WriteMessageAsync(
-            Message message,
+        public override async ValueTask WriteUsersReactionsMessageAsync(
+            UsersReactionsMessage message,
             CancellationToken cancellationToken = default)
         {
-            await base.WriteMessageAsync(message, cancellationToken);
+            await base.WriteUsersReactionsMessageAsync(message, cancellationToken);
 
             // If message group is empty or the given message can be grouped, buffer the given message
             if (!_messageGroupBuffer.Any() || MessageGroup.CanJoin(_messageGroupBuffer.Last(), message))
