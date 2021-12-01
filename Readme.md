@@ -1,3 +1,10 @@
+# Warning
+
+This is customization of Tyrrrz's DiscordChatExporter originally on [GitHub](https://github.com/Tyrrrz/DiscordChatExporter/).
+
+Customized features:
+- User list on message reactions
+
 # DiscordChatExporter
 
 [![Build](https://github.com/Tyrrrz/DiscordChatExporter/workflows/CI/badge.svg?branch=master)](https://github.com/Tyrrrz/DiscordChatExporter/actions)
