@@ -50,6 +50,9 @@ namespace DiscordChatExporter.Cli.Commands.Base
         [CommandOption("dateformat", Description = "Format used when writing dates.")]
         public string DateFormat { get; init; } = "dd-MMM-yy hh:mm tt";
 
+        [CommandOption("skip-existing", Description = "Skip already downloaded data (expecting default file names)")]
+        public bool ShouldSkipExisting { get; init; } = false;
+
         private ChannelExporter? _channelExporter;
         protected ChannelExporter Exporter => _channelExporter ??= new ChannelExporter(Discord);
 
@@ -90,7 +93,15 @@ namespace DiscordChatExporter.Cli.Commands.Base
                                 DateFormat
                             );
 
-                            await Exporter.ExportChannelAsync(request, progress, cancellationToken);
+                            if (File.Exists(request.OutputBaseFilePath) && ShouldSkipExisting)
+                            {
+                                progress.Value = progress.MaxValue;
+                                progress.StopTask();
+                            }
+                            else
+                            {
+                                await Exporter.ExportChannelAsync(request, progress, cancellationToken);
+                            }
                         });
                     }
                     catch (DiscordChatExporterException ex) when (!ex.IsFatal)

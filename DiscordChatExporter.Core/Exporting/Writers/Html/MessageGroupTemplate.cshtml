@@ -422,7 +422,7 @@
                             var title = string.Join(", ", reaction.Users.Select(x => x.Name)) + " zareagoval(i) s " + reaction.Emoji.Code;
                             <div class="chatlog__reaction" title="@title">
                                 <img class="emoji emoji--small" alt="@reaction.Emoji.Name" src="@await ResolveUrlAsync(reaction.Emoji.ImageUrl)" loading="lazy">
-                                <span class="chatlog__reaction-count">@(message.Reactions.First(x => x.Emoji.Id == reaction.Emoji.Id).Count)</span>
+                                <span class="chatlog__reaction-count">@(message.Reactions.First(x => x.Emoji.Name == reaction.Emoji.Name).Count)</span>
                             </div>
                         }
                     </div>

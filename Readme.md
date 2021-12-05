@@ -4,6 +4,7 @@ This is customization of Tyrrrz's DiscordChatExporter originally on [GitHub](htt
 
 Customized features:
 - User list on message reactions
+- CLI: --skip-existing option: Reuse already downloaded data - don't download it more than once (based on naming convention)
 
 # DiscordChatExporter
 
